@@ -48,3 +48,4 @@ if st.session_state.filter_option == "With 'a'":
         st.write("•", t)
         
 st.button("hello world")
+st.success("Task added successfully!")
