@@ -1,30 +1,54 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "streamlit-app"
-        CONTAINER_NAME = "streamlit-container"
-    }
-
     stages {
 
-        stage('Build Docker Image') {
+        stage('Checkout SCM') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                checkout scm
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Git Pull') {
             steps {
-                sh 'docker stop $CONTAINER_NAME || true'
-                sh 'docker rm $CONTAINER_NAME || true'
+                sh 'git pull origin main'
             }
         }
 
-        stage('Run New Container') {
+        stage('Add Configuration') {
             steps {
-                sh 'docker run -d -p 8501:8501 --name $CONTAINER_NAME $IMAGE_NAME'
+                sh 'echo "Configuration step completed"'
             }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh 'docker build -t streamlit-app .'
+            }
+        }
+
+        stage('Delete Previous Container') {
+            steps {
+                sh 'docker rm -f streamlit || true'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d -p 8501:8501 --name streamlit streamlit-app'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished'
+        }
+        success {
+            echo 'Build Successful'
+        }
+        failure {
+            echo 'Build Failed'
         }
     }
 }
